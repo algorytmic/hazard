@@ -2,11 +2,6 @@ import socket
 import os
 import requests
 import idna
-import domain2idna
-import time
-from termcolor import colored
-
-
 from bs4 import BeautifulSoup
 
 print("Weryfikator domen hazardowych - Łukasz Prus v 1.0 beta")
@@ -16,27 +11,21 @@ ip_mf = '145.237.235.240'
 print("Ustanawiam połączenie ze stroną MF i pobieram xml")
 
 ## Pobranie danych z API Ministerstwa Finansow
-## Ustawienie crona na pobieranie danych co 2 godziny
 
 response = requests.get(api_url)
 with open('hazard.xml', 'wb') as file:
     file.write(response.content)
-
 
 ##Odczytanie danych z pliku XML
 with open('hazard.xml', 'r', encoding="utf-8") as f:
     dane = f.read()
 
 print("XML pobrany - rozpoczynam parsowanie")
-
 dane_domen = BeautifulSoup(dane, features="xml")
-
 adresy_domen = dane_domen.find_all('AdresDomeny')
-
 
 gotowe_dane = list()
 gotowe_dane_bind = list()
-
 count_wadliwe = 0
 count_poprawne = 0
 count_wszystkie = 0
@@ -56,11 +45,9 @@ for dane in adresy_domen:
 
     try:
         addr = socket.gethostbyname(dane)
-        if(addr == '145.237.235.240'):
-            # print(colored("Domena "+dane+" jest poprawnie rozwiazana i ma IP: "+addr , 'green'))
+        if(addr == ip_mf):
             count_poprawne = count_poprawne + 1
             print("Zablokowane domeny: " +str(count_poprawne) + " blokowana domena ------> " + dane)
-            # print("Poprawnie rozwiązane domeny: " + count_poprawne)
         else:
             print(" Domena  " +dane+ " nie jest BLOKOWANA!!")
             count_wadliwe = count_wadliwe + 1
@@ -82,7 +69,6 @@ if len(wadliwe_list) == 0:
 else:
     print("Domeny ktore nie sa blokowane: " + str(count_wadliwe))
     print(wadliwe_list)
-
 
 if len(nie_mozna_rozwiazac) != 0:
     print("Domeny ktorych nie mozna rozwiazac: " + str(count_nierozwiazane))
